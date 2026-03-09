@@ -1,1 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow — Todo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0a0b;
+      --surface: #141416;
+      --surface-2: #1c1c1f;
+      --surface-3: #242428;
+      --border: #2a2a2e;
+      --border-hover: #3a3a3f;
+      --text: #f5f5f7;
+      --text-secondary: #8e8e93;
+      --text-tertiary: #636366;
+      --accent: #6c5ce7;
+      --accent-soft: rgba(108, 92, 231, 0.12);
+      --accent-glow: rgba(108, 92, 231, 0.3);
+      --danger: #ff6b6b;
+      --danger-soft: rgba(255, 107, 107, 0.12);
+      --success: #51cf66;
+      --success-soft: rgba(81, 207, 102, 0.12);
+      --warning: #ffd43b;
+      --warning-soft: rgba(255, 212, 59, 0.12);
+      --orange: #ff922b;
+      --orange-soft: rgba(255, 146, 43, 0.12);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --radius-xs: 7px;
+      --shadow: 0 2px 20px rgba(0,0,0,0.3);
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0.4;
+      z-index: 0;
+    }
+
+    .app {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 60px 20px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header { margin-bottom: 40px; }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .date-display {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 20px;
+    }
+
+    .stat-pill {
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .stat-pill.total {
+      background: var(--surface-2);
+      color: var(--text-secondary);
+    }
+
+    .stat-pill.done {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .stat-pill.overdue {
+      background: var(--danger-soft);
+      color: var(--danger);
+      display: none;
+    }
+
+    .stat-pill.overdue.visible {
+      display: inline-flex;
+    }
+
+    .add-section { margin-bottom: 32px; }
+
+    .add-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .add-form:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft), var(--shadow);
+    }
+
+    .add-form-main {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .add-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      padding: 12px 14px;
+      font-weight: 400;
+    }
+
+    .add-input::placeholder { color: var(--text-tertiary); }
+
+    .add-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition), opacity var(--transition);
+      flex-shrink: 0;
+    }
+
+    .add-btn:hover { transform: scale(1.05); }
+    .add-btn:active { transform: scale(0.95); }
+
+    .add-meta {
+      display: none;
+      padding: 8px 10px;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    .add-meta.visible { display: flex; }
+
+    .meta-btn {
+      padding: 6px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+
+    .meta-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .meta-btn.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .meta-btn input[type="date"],
+    .meta-btn input[type="time"] {
+      background: none;
+      border: none;
+      color: inherit;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      cursor: pointer;
+      outline: none;
+      width: auto;
+    }
+
+    .meta-btn input[type="date"]::-webkit-calendar-picker-indicator,
+    .meta-btn input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+      cursor: pointer;
+    }
+
+    .priority-selector {
+      display: flex;
+      gap: 4px;
+    }
+
+    .priority-opt {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      transition: all var(--transition);
+    }
+
+    .priority-opt:hover { border-color: var(--border-hover); }
+    .priority-opt[data-p="high"].selected { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
+    .priority-opt[data-p="medium"].selected { border-color: var(--orange); background: var(--orange-soft); color: var(--orange); }
+    .priority-opt[data-p="low"].selected { border-color: var(--success); background: var(--success-soft); color: var(--success); }
+
+    .filter-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .filter-chip {
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+
+    .filter-chip:hover { color: var(--text-secondary); }
+
+    .filter-chip.active {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .todo-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: all var(--transition);
+      animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .todo-item:hover {
+      border-color: var(--border-hover);
+      background: var(--surface-2);
+    }
+
+    .todo-item.completed { opacity: 0.45; }
+    .todo-item.overdue:not(.completed) { border-color: rgba(255, 107, 107, 0.25); }
+    .todo-item.removing { animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes slideOut {
+      to { opacity: 0; transform: translateX(30px) scale(0.96); }
+    }
+
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: all var(--transition);
+    }
+
+    .checkbox:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .checkbox.checked {
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-color: transparent;
+    }
+
+    .checkbox.checked svg { opacity: 1; }
+
+    .checkbox svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .todo-item.priority-high .checkbox { border-color: rgba(255, 107, 107, 0.4); }
+    .todo-item.priority-medium .checkbox { border-color: rgba(255, 146, 43, 0.4); }
+
+    .todo-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .todo-text {
+      font-size: 15px;
+      font-weight: 450;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .completed .todo-text {
+      text-decoration: line-through;
+      color: var(--text-tertiary);
+    }
+
+    .todo-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .todo-tag {
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .tag-high { background: var(--danger-soft); color: var(--danger); }
+    .tag-medium { background: var(--orange-soft); color: var(--orange); }
+    .tag-low { background: var(--success-soft); color: var(--success); }
+
+    .todo-due {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .todo-due.overdue { color: var(--danger); }
+    .todo-due.today { color: var(--warning); }
+    .todo-due svg { width: 12px; height: 12px; }
+
+    .todo-actions {
+      display: flex;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity var(--transition);
+      flex-shrink: 0;
+    }
+
+    .todo-item:hover .todo-actions { opacity: 1; }
+
+    .action-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-xs);
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+    }
+
+    .action-btn:hover {
+      background: var(--surface-3);
+      color: var(--text);
+    }
+
+    .action-btn.delete:hover {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .empty-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    .notification-banner {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 500px;
+      backdrop-filter: blur(20px);
+    }
+
+    .notification-banner.visible { transform: translateX(-50%) translateY(0); }
+
+    .notification-banner .notif-icon { font-size: 20px; flex-shrink: 0; }
+
+    .notification-banner .notif-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .notification-banner .notif-text span {
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+
+    .notif-dismiss {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 4px;
+      flex-shrink: 0;
+      font-size: 16px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-tertiary);
+      margin: 24px 0 10px;
+      padding-left: 4px;
+    }
+
+    .section-label:first-child { margin-top: 0; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      animation: modalIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    }
+
+    .modal h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .modal-field { margin-bottom: 14px; }
+
+    .modal-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .modal-field input,
+    .modal-field select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus { border-color: var(--accent); }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .modal-btn {
+      padding: 9px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      transition: all var(--transition);
+    }
+
+    .modal-btn.cancel {
+      background: var(--surface-2);
+      color: var(--text-secondary);
+    }
+
+    .modal-btn.cancel:hover { color: var(--text); }
+
+    .modal-btn.save {
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-color: transparent;
+      color: white;
+    }
+
+    .modal-btn.save:hover { opacity: 0.9; }
+
+    @media (max-width: 480px) {
+      .app { padding: 40px 16px 100px; }
+      .stats-bar { flex-wrap: wrap; }
+      .todo-actions { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="notification-banner" id="notification">
+    <span class="notif-icon"></span>
+    <div class="notif-text"></div>
+    <button class="notif-dismiss" onclick="dismissNotification()">&times;</button>
+  </div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3>Edit Task</h3>
+      <div class="modal-field">
+        <label>Task</label>
+        <input type="text" id="editText" />
+      </div>
+      <div class="modal-field">
+        <label>Due Date</label>
+        <input type="date" id="editDate" />
+      </div>
+      <div class="modal-field">
+        <label>Reminder Time</label>
+        <input type="time" id="editTime" />
+      </div>
+      <div class="modal-field">
+        <label>Priority</label>
+        <select id="editPriority">
+          <option value="">None</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button>
+        <button class="modal-btn save" onclick="saveEdit()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <header class="header">
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h1>Flow</h1>
+        </div>
+        <div class="date-display" id="dateDisplay"></div>
+      </div>
+      <div class="stats-bar">
+        <span class="stat-pill total" id="statTotal">0 tasks</span>
+        <span class="stat-pill done" id="statDone">0 done</span>
+        <span class="stat-pill overdue" id="statOverdue">0 overdue</span>
+      </div>
+    </header>
+
+    <section class="add-section">
+      <div class="add-form" id="addForm">
+        <div class="add-form-main">
+          <input type="text" class="add-input" id="addInput" placeholder="What needs to be done?" autocomplete="off" />
+          <button class="add-btn" id="addBtn" title="Add task">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="add-meta" id="addMeta">
+          <div class="meta-btn" id="dueDateBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" id="dueDate" title="Due date" />
+          </div>
+          <div class="meta-btn" id="reminderBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <input type="time" id="reminderTime" title="Reminder time" />
+          </div>
+          <div class="priority-selector">
+            <button class="priority-opt" data-p="low" title="Low">L</button>
+            <button class="priority-opt" data-p="medium" title="Medium">M</button>
+            <button class="priority-opt" data-p="high" title="High">H</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="filter-bar">
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="active">Active</button>
+      <button class="filter-chip" data-filter="completed">Completed</button>
+      <button class="filter-chip" data-filter="overdue">Overdue</button>
+    </div>
+
+    <div class="todo-list" id="todoList"></div>
+  </div>
+
+  <script>
+    let todos = JSON.parse(localStorage.getItem('flow_todos') || '[]');
+    let currentFilter = 'all';
+    let editingId = null;
+    let selectedPriority = '';
+
+    const addInput = document.getElementById('addInput');
+    const addMeta = document.getElementById('addMeta');
+    const dueDate = document.getElementById('dueDate');
+    const reminderTime = document.getElementById('reminderTime');
+    const todoList = document.getElementById('todoList');
+    const dateDisplay = document.getElementById('dateDisplay');
+    const notification = document.getElementById('notification');
+
+    function updateDate() {
+      const now = new Date();
+      dateDisplay.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long', month: 'short', day: 'numeric'
+      });
+    }
+    updateDate();
+
+    addInput.addEventListener('focus', () => addMeta.classList.add('visible'));
+
+    document.querySelectorAll('.priority-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = btn.dataset.p;
+        if (selectedPriority === p) {
+          selectedPriority = '';
+          btn.classList.remove('selected');
+        } else {
+          document.querySelectorAll('.priority-opt').forEach(b => b.classList.remove('selected'));
+          selectedPriority = p;
+          btn.classList.add('selected');
+        }
+      });
+    });
+
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentFilter = chip.dataset.filter;
+        render();
+      });
+    });
+
+    function addTodo() {
+      const text = addInput.value.trim();
+      if (!text) return;
+      const todo = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        text,
+        completed: false,
+        priority: selectedPriority,
+        dueDate: dueDate.value || null,
+        reminderTime: reminderTime.value || null,
+        reminded: false,
+        createdAt: new Date().toISOString()
+      };
+      todos.unshift(todo);
+      save();
+      render();
+      addInput.value = '';
+      dueDate.value = '';
+      reminderTime.value = '';
+      selectedPriority = '';
+      document.querySelectorAll('.priority-opt').forEach(b => b.classList.remove('selected'));
+      addInput.focus();
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addTodo);
+    addInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+    function toggleTodo(id) {
+      const todo = todos.find(t => t.id === id);
+      if (todo) { todo.completed = !todo.completed; save(); render(); }
+    }
+
+    function deleteTodo(id) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) {
+        el.classList.add('removing');
+        setTimeout(() => { todos = todos.filter(t => t.id !== id); save(); render(); }, 280);
+      }
+    }
+
+    function openEditModal(id) {
+      editingId = id;
+      const todo = todos.find(t => t.id === id);
+      if (!todo) return;
+      document.getElementById('editText').value = todo.text;
+      document.getElementById('editDate').value = todo.dueDate || '';
+      document.getElementById('editTime').value = todo.reminderTime || '';
+      document.getElementById('editPriority').value = todo.priority || '';
+      document.getElementById('editModal').classList.add('visible');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('visible');
+      editingId = null;
+    }
+
+    function saveEdit() {
+      const todo = todos.find(t => t.id === editingId);
+      if (!todo) return;
+      const newText = document.getElementById('editText').value.trim();
+      if (!newText) return;
+      todo.text = newText;
+      todo.dueDate = document.getElementById('editDate').value || null;
+      todo.reminderTime = document.getElementById('editTime').value || null;
+      todo.priority = document.getElementById('editPriority').value || '';
+      todo.reminded = false;
+      save();
+      render();
+      closeEditModal();
+    }
+
+    document.getElementById('editModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('editModal')) closeEditModal();
+    });
+
+    function showNotification(icon, html) {
+      notification.querySelector('.notif-icon').textContent = icon;
+      notification.querySelector('.notif-text').innerHTML = html;
+      notification.classList.add('visible');
+      clearTimeout(notification._timeout);
+      notification._timeout = setTimeout(dismissNotification, 6000);
+    }
+
+    function dismissNotification() { notification.classList.remove('visible'); }
+
+    function checkReminders() {
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const currentTime = now.toTimeString().slice(0, 5);
+      todos.forEach(todo => {
+        if (todo.completed) return;
+        if (todo.dueDate && todo.reminderTime && !todo.reminded) {
+          if (todo.dueDate === todayStr && todo.reminderTime <= currentTime) {
+            todo.reminded = true;
+            save();
+            showNotification('\u{1F514}', `<strong>${todo.text}</strong><br><span>Reminder \u2014 this task is due today</span>`);
+            if (Notification.permission === 'granted') {
+              new Notification('Flow \u2014 Reminder', { body: todo.text });
+            }
+          }
+        }
+        if (todo.dueDate && todo.dueDate < todayStr && !todo.reminded) {
+          todo.reminded = true;
+          save();
+          showNotification('\u26A0\uFE0F', `<strong>${todo.text}</strong><br><span>This task is overdue!</span>`);
+        }
+      });
+    }
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    function isOverdue(todo) {
+      if (!todo.dueDate || todo.completed) return false;
+      return todo.dueDate < new Date().toISOString().split('T')[0];
+    }
+
+    function isToday(dateStr) {
+      return dateStr === new Date().toISOString().split('T')[0];
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr + 'T00:00:00');
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      if (dateStr === today.toISOString().split('T')[0]) return 'Today';
+      if (dateStr === tomorrow.toISOString().split('T')[0]) return 'Tomorrow';
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function formatTime12(timeStr) {
+      if (!timeStr) return '';
+      const [h, m] = timeStr.split(':');
+      const hour = parseInt(h);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      return `${hour % 12 || 12}:${m} ${ampm}`;
+    }
+
+    function render() {
+      const now = new Date().toISOString().split('T')[0];
+      let filtered = todos;
+      if (currentFilter === 'active') filtered = todos.filter(t => !t.completed);
+      else if (currentFilter === 'completed') filtered = todos.filter(t => t.completed);
+      else if (currentFilter === 'overdue') filtered = todos.filter(t => isOverdue(t));
+
+      const total = todos.length;
+      const done = todos.filter(t => t.completed).length;
+      const overdue = todos.filter(t => isOverdue(t)).length;
+      document.getElementById('statTotal').textContent = `${total} task${total !== 1 ? 's' : ''}`;
+      document.getElementById('statDone').textContent = `${done} done`;
+      document.getElementById('statOverdue').textContent = `${overdue} overdue`;
+      document.getElementById('statOverdue').classList.toggle('visible', overdue > 0);
+
+      if (filtered.length === 0) {
+        const messages = {
+          all: ['All clear', 'Add a task to get started'],
+          active: ['Nothing active', 'All tasks are completed'],
+          completed: ['No completed tasks', 'Complete a task to see it here'],
+          overdue: ['Nothing overdue', 'You\'re all caught up']
+        };
+        const [title, sub] = messages[currentFilter];
+        todoList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">${currentFilter === 'overdue' ? '\u{1F389}' : '\u2726'}</div>
+            <h3>${title}</h3>
+            <p>${sub}</p>
+          </div>`;
+        return;
+      }
+
+      const active = filtered.filter(t => !t.completed);
+      const completed = filtered.filter(t => t.completed);
+      let html = '';
+      if (active.length && completed.length && currentFilter === 'all') {
+        html += `<div class="section-label">Active</div>`;
+      }
+      active.forEach(t => html += renderItem(t));
+      if (completed.length && currentFilter !== 'active') {
+        if (active.length && currentFilter === 'all') {
+          html += `<div class="section-label">Completed</div>`;
+        }
+        completed.forEach(t => html += renderItem(t));
+      }
+      todoList.innerHTML = html;
+    }
+
+    function renderItem(t) {
+      const overdue = isOverdue(t);
+      const today = t.dueDate && isToday(t.dueDate) && !t.completed;
+      const classes = [
+        'todo-item',
+        t.completed ? 'completed' : '',
+        overdue ? 'overdue' : '',
+        t.priority ? `priority-${t.priority}` : ''
+      ].filter(Boolean).join(' ');
+
+      let metaHtml = '';
+      if (t.priority) {
+        const labels = { high: 'High', medium: 'Med', low: 'Low' };
+        metaHtml += `<span class="todo-tag tag-${t.priority}">${labels[t.priority]}</span>`;
+      }
+      if (t.dueDate) {
+        const dueClass = overdue ? 'overdue' : (today ? 'today' : '');
+        metaHtml += `<span class="todo-due ${dueClass}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${formatDate(t.dueDate)}${t.reminderTime ? ' at ' + formatTime12(t.reminderTime) : ''}</span>`;
+      }
+
+      return `
+        <div class="todo-item ${classes}" data-id="${t.id}">
+          <div class="checkbox ${t.completed ? 'checked' : ''}" onclick="toggleTodo('${t.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="todo-content">
+            <div class="todo-text">${escapeHtml(t.text)}</div>
+            ${metaHtml ? `<div class="todo-meta">${metaHtml}</div>` : ''}
+          </div>
+          <div class="todo-actions">
+            <button class="action-btn" onclick="openEditModal('${t.id}')" title="Edit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="action-btn delete" onclick="deleteTodo('${t.id}')" title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function save() { localStorage.setItem('flow_todos', JSON.stringify(todos)); }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
+
+    render();
+    checkReminders();
+    setInterval(checkReminders, 30000);
+  </script>
+</body>
+</html>
